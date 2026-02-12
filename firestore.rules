@@ -26,22 +26,21 @@ service cloud.firestore {
 
     // ============ FILES COLLECTION ============
     // Files storage - authenticated users can read all, write their own
-    match /files/{document=**} {
+    match /files/{fileId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null && 
-                       request.resource.data.uploadedBy == request.auth.uid &&
-                       request.resource.data.size <= 5 * 1024 * 1024; // 5MB limit
+                       request.resource.data.uploadedBy == request.auth.uid;
       allow update: if request.auth != null &&
                        (request.auth.uid == resource.data.uploadedBy ||
                         request.auth.token.role == 'admin');
       allow delete: if request.auth != null &&
                        (request.auth.uid == resource.data.uploadedBy ||
                         request.auth.token.role == 'admin');
-      
-      // Allow subcollections (for chunks if needed)
-      match /{document=**} {
-        allow read, write: if request.auth != null;
-      }
+    }
+
+    // File chunks subcollection
+    match /files/{fileId}/chunks/{chunkId} {
+      allow read, write: if request.auth != null;
     }
 
     // ============ ORDERS COLLECTION ============
@@ -54,10 +53,21 @@ service cloud.firestore {
     }
 
     // ============ ADMIN ONLY COLLECTIONS ============
-    // Statistics and logs
+    // Statistics, logs, audit
     match /stats/{document=**} {
-      allow read: if request.auth.token.role == 'admin';
-      allow write: if request.auth.token.role == 'admin';
+      allow read: if request.auth != null && request.auth.token.admin == true;
+      allow write: if request.auth != null && request.auth.token.admin == true;
+    }
+
+    match /key_audit/{document=**} {
+      allow read: if request.auth != null && request.auth.token.admin == true;
+      allow write: if false;
+    }
+
+    // ============ REFERENCE DATA ============
+    match /reference/{collection}/{docId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.admin == true;
     }
 
     // ============ DENY EVERYTHING ELSE ============
