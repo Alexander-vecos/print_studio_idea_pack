@@ -2,68 +2,143 @@ import React, { useState } from 'react';
 import { firestoreAdapter } from '../../firebase/firestoreAdapter';
 import { useAuthStore } from '../../stores/authStore';
 import { useReferenceData } from '../../hooks/useReferenceData';
+import { FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
 
 export const AddOrderForm: React.FC<{ onCreated?: (id: string) => void }> = ({ onCreated }) => {
   const user = useAuthStore((s) => s.user);
   const { items: priorities } = useReferenceData('PRIORITIES');
+  const { items: sectors } = useReferenceData('SECTORS');
 
   const [client, setClient] = useState('');
   const [product, setProduct] = useState('');
   const [type, setType] = useState('');
   const [colors, setColors] = useState('');
-  const [priority, setPriority] = useState(priorities[0]?.code || 'default');
+  const [sector, setSector] = useState('');
+  const [priority, setPriority] = useState(priorities[0]?.code || 'normal');
+  const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!client || !product) {
-      setMsg('Please fill client and product');
+    if (!client.trim() || !product.trim()) {
+      setErrorMsg('Заполните клиента и продукт');
       return;
     }
 
     setLoading(true);
+    setErrorMsg(null);
     try {
       const order = {
         orderNumber: `O-${Date.now().toString().slice(-6)}`,
-        client,
-        product,
+        client: client.trim(),
+        product: product.trim(),
         details: { type, colors },
-        priority,
+        sector: sector || null,
+        priority: priority || 'normal',
+        notes: notes.trim() || null,
         status: 'new',
         createdBy: user?.uid || 'anon',
       };
 
       const id = await firestoreAdapter.addOrder(order);
-      setMsg('Order created');
-      setClient(''); setProduct(''); setType(''); setColors('');
+      setSuccess(true);
+      setClient(''); setProduct(''); setType(''); setColors(''); setNotes('');
       if (onCreated) onCreated(id);
+      setTimeout(() => setSuccess(false), 3000);
     } catch (err: any) {
-      setMsg(err.message || 'Failed to create order');
+      setErrorMsg(err.message || 'Не удалось создать заказ');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="p-6">
-      <h2 className="text-xl font-semibold mb-4">Create New Order</h2>
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <input value={client} onChange={(e) => setClient(e.target.value)} placeholder="Client" className="w-full p-3 border rounded" />
-        <input value={product} onChange={(e) => setProduct(e.target.value)} placeholder="Product" className="w-full p-3 border rounded" />
-        <div className="grid grid-cols-2 gap-2">
-          <input value={type} onChange={(e) => setType(e.target.value)} placeholder="Type (e.g., Digital)" className="p-3 border rounded" />
-          <input value={colors} onChange={(e) => setColors(e.target.value)} placeholder="Colors (e.g., 4+4)" className="p-3 border rounded" />
+    <div className="max-w-lg mx-auto">
+      <h2 className="text-xl font-semibold text-white mb-4">Новый заказ</h2>
+
+      {success && (
+        <div className="mb-4 p-3 bg-emerald-500/20 border border-emerald-500/30 rounded-xl flex items-center gap-2 text-emerald-400">
+          <FiCheckCircle /> Заказ создан!
         </div>
-        <select value={priority} onChange={(e) => setPriority(e.target.value)} className="w-full p-3 border rounded">
-          {priorities.map((p) => (
-            <option key={p.code} value={p.code}>{p.label}</option>
-          ))}
+      )}
+
+      {errorMsg && (
+        <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-xl flex items-center gap-2 text-red-400">
+          <FiAlertCircle /> {errorMsg}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <input
+          value={client}
+          onChange={(e) => setClient(e.target.value)}
+          placeholder="Клиент *"
+          className="w-full p-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-500 focus:outline-none"
+        />
+        <input
+          value={product}
+          onChange={(e) => setProduct(e.target.value)}
+          placeholder="Продукт / Услуга *"
+          className="w-full p-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-500 focus:outline-none"
+        />
+        <div className="grid grid-cols-2 gap-2">
+          <input
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            placeholder="Тип (Цифра, Офсет...)"
+            className="p-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-500 focus:outline-none"
+          />
+          <input
+            value={colors}
+            onChange={(e) => setColors(e.target.value)}
+            placeholder="Цвета (4+4, 1+0...)"
+            className="p-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-500 focus:outline-none"
+          />
+        </div>
+
+        {sectors.length > 0 && (
+          <select
+            value={sector}
+            onChange={(e) => setSector(e.target.value)}
+            className="w-full p-3 bg-white/10 border border-white/20 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
+          >
+            <option value="" className="bg-gray-900">Сектор (необязательно)</option>
+            {sectors.map((s) => (
+              <option key={s.code} value={s.code} className="bg-gray-900">{s.label}</option>
+            ))}
+          </select>
+        )}
+
+        <select
+          value={priority}
+          onChange={(e) => setPriority(e.target.value)}
+          className="w-full p-3 bg-white/10 border border-white/20 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
+        >
+          {priorities.length > 0 ? priorities.map((p) => (
+            <option key={p.code} value={p.code} className="bg-gray-900">{p.label}</option>
+          )) : (
+            <option value="normal" className="bg-gray-900">Обычный</option>
+          )}
         </select>
 
-        <button className="w-full py-3 bg-emerald-600 text-white rounded" disabled={loading} type="submit">Create Order</button>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Примечания..."
+          rows={2}
+          className="w-full p-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-500 focus:outline-none resize-none"
+        />
+
+        <button
+          className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-colors disabled:opacity-50"
+          disabled={loading}
+          type="submit"
+        >
+          {loading ? 'Создание...' : 'Создать заказ'}
+        </button>
       </form>
-      {msg && <div className="mt-3 text-sm text-gray-500">{msg}</div>}
     </div>
   );
 };

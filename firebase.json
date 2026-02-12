@@ -1,7 +1,7 @@
 {
   "hosting": {
     "site": "nexuspolygraf",
-    "public": "dist",
+    "public": "nexus-polygraf/dist",
     "cleanUrls": true,
     "rewrites": [
       {
@@ -9,5 +9,12 @@
         "destination": "/index.html"
       }
     ]
+  },
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs18"
+  },
+  "firestore": {
+    "rules": "firestore.rules"
   }
 }

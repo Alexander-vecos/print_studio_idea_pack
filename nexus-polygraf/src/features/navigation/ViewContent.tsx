@@ -1,5 +1,6 @@
 import React from 'react';
-import { FiCompass, FiCalendar, FiPlus, FiUsers, FiMoreHorizontal } from 'react-icons/fi';
+import { FiCalendar, FiUsers, FiMoreHorizontal, FiLogOut, FiUser, FiShield } from 'react-icons/fi';
+import { useAuthStore } from '../../stores/authStore';
 
 interface ViewPlaceholderProps {
   icon: React.ReactNode;
@@ -39,10 +40,35 @@ export const TeamView: React.FC = () => (
   />
 );
 
-export const MoreView: React.FC = () => (
-  <ViewPlaceholder
-    icon={<FiMoreHorizontal />}
-    title="Options"
-    description="Settings, preferences, and additional options"
-  />
-);
+export const MoreView: React.FC = () => {
+  const { user, logout } = useAuthStore();
+
+  return (
+    <div className="p-6 space-y-4">
+      <h2 className="text-xl font-semibold text-white mb-4">Настройки</h2>
+
+      {/* User info */}
+      <div className="bg-white/10 rounded-xl p-4 flex items-center gap-3">
+        <div className="w-12 h-12 rounded-full bg-emerald-600/30 flex items-center justify-center">
+          <FiUser className="text-emerald-400 text-xl" />
+        </div>
+        <div>
+          <p className="text-white font-medium">{user?.phoneNumber || user?.uid?.slice(0, 8) || 'Пользователь'}</p>
+          <div className="flex items-center gap-1 text-white/50 text-sm">
+            <FiShield className="text-xs" />
+            <span className="capitalize">{user?.role || 'guest'}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Logout */}
+      <button
+        onClick={() => logout()}
+        className="w-full flex items-center gap-3 p-4 bg-red-500/20 hover:bg-red-500/30 rounded-xl text-red-400 transition-colors"
+      >
+        <FiLogOut className="text-xl" />
+        <span>Выйти из аккаунта</span>
+      </button>
+    </div>
+  );
+};
