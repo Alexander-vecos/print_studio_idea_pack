@@ -52,20 +52,23 @@ export const PhoneAuthModal: React.FC = () => {
 
           {step === 'phone' && (
             <form onSubmit={handleSend} className="space-y-3">
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 555 555 5555" className="w-full p-3 border rounded" />
-              <div id="recaptcha-container" />
-              <button type="submit" disabled={isLoading} className="w-full py-3 bg-emerald-600 text-white rounded">Send OTP</button>
+              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+380 63 515 6990" className="w-full p-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-center text-lg" />
+              <button type="submit" disabled={isLoading || !phone.trim()} className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium disabled:opacity-50">{isLoading ? 'Отправка...' : 'Отправить код'}</button>
             </form>
           )}
 
           {step === 'code' && (
             <form onSubmit={handleVerify} className="space-y-3">
-              <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="123456" className="w-full p-3 border rounded text-center text-lg" />
-              <button type="submit" disabled={isLoading} className="w-full py-3 bg-emerald-600 text-white rounded">Confirm Code</button>
+              <p className="text-sm text-gray-500">Код отправлен на {phone}</p>
+              <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="123456" className="w-full p-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-center text-2xl tracking-[0.5em] font-mono" maxLength={6} autoFocus />
+              <button type="submit" disabled={isLoading || code.length < 6} className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium disabled:opacity-50">{isLoading ? 'Проверка...' : 'Подтвердить'}</button>
+              <button type="button" onClick={() => { setStep('phone'); setCode(''); setMessage(null); }} className="w-full text-sm text-gray-500 hover:text-gray-700">← Другой номер</button>
             </form>
           )}
 
-          {message && <div className="mt-3 text-sm text-red-500">{message}</div>}
+          {message && <div className="mt-3 text-sm text-red-500 bg-red-50 dark:bg-red-900/20 p-2 rounded">{message}</div>}
+
+          <button type="button" onClick={() => { useUIStore.getState().openModal('keyAuth'); }} className="mt-3 w-full text-sm text-gray-400 hover:text-gray-600">← Назад к входу по ключу</button>
 
         </motion.div>
       </div>

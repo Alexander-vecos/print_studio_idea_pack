@@ -168,17 +168,28 @@ export const authAdapter = {
 
   // ---- Phone Auth flow (client-side helper using Recaptcha) ----
   _confirmationResult: null as any,
+  _recaptchaVerifier: null as any,
 
   sendPhoneOtp: async (phoneNumber: string, recaptchaContainerId = 'recaptcha-container') => {
     try {
+      // Clean up previous verifier if exists
+      if ((authAdapter as any)._recaptchaVerifier) {
+        try { (authAdapter as any)._recaptchaVerifier.clear(); } catch {}
+      }
       // Setup invisible recaptcha
       const verifier = new RecaptchaVerifier(auth, recaptchaContainerId, { size: 'invisible' });
+      (authAdapter as any)._recaptchaVerifier = verifier;
       // start sign-in flow
       const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, verifier);
       (authAdapter as any)._confirmationResult = confirmationResult;
       return { success: true };
     } catch (error: any) {
       console.error('sendPhoneOtp error:', error);
+      // Clear verifier on error so user can retry
+      if ((authAdapter as any)._recaptchaVerifier) {
+        try { (authAdapter as any)._recaptchaVerifier.clear(); } catch {}
+        (authAdapter as any)._recaptchaVerifier = null;
+      }
       throw new Error(error.message || 'Failed to send OTP');
     }
   },
