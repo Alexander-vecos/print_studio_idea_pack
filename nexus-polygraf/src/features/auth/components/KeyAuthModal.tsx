@@ -65,8 +65,8 @@ export const KeyAuthModal: React.FC = () => {
                 Enter your personal access key
               </p>
               <div className="mt-3 text-center">
-                <button className="text-sm text-emerald-600 hover:underline" onClick={() => (useUIStore.getState().openModal('phoneAuth'))}>
-                  Or sign in with phone
+                <button className="text-sm text-blue-600 hover:underline" onClick={() => (useUIStore.getState().openModal('emailAuth'))}>
+                  Войти по email
                 </button>
               </div>
             </div>

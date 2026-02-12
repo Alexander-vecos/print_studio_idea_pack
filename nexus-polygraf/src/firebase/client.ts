@@ -2,8 +2,6 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getDatabase } from 'firebase/database';
-import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
-
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -15,20 +13,6 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
-// App Check — debug token for localhost, reCAPTCHA for production
-if (import.meta.env.DEV) {
-  // In development, use debug token
-  (self as any).FIREBASE_APPCHECK_DEBUG_TOKEN = '8FFD3C70-6CAA-4EB2-85FD-60F2337B6F2F';
-}
-
-const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
-if (recaptchaSiteKey) {
-  initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider(recaptchaSiteKey),
-    isTokenAutoRefreshEnabled: true,
-  });
-}
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);

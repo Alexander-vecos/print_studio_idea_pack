@@ -4,8 +4,8 @@ import {
   onAuthStateChanged,
   User as FirebaseUser,
   signInWithCustomToken,
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
 } from 'firebase/auth';
 import {
   collection,
@@ -166,56 +166,63 @@ export const authAdapter = {
     }
   },
 
-  // ---- Phone Auth flow (client-side helper using Recaptcha) ----
-  _confirmationResult: null as any,
-  _recaptchaVerifier: null as any,
-
-  sendPhoneOtp: async (phoneNumber: string, recaptchaContainerId = 'recaptcha-container') => {
+  // ---- Email/Password Auth ----
+  loginWithEmail: async (email: string, password: string): Promise<UserProfile> => {
     try {
-      // Clean up previous verifier if exists
-      if ((authAdapter as any)._recaptchaVerifier) {
-        try { (authAdapter as any)._recaptchaVerifier.clear(); } catch {}
-      }
-      // Setup invisible recaptcha
-      const verifier = new RecaptchaVerifier(auth, recaptchaContainerId, { size: 'invisible' });
-      (authAdapter as any)._recaptchaVerifier = verifier;
-      // start sign-in flow
-      const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, verifier);
-      (authAdapter as any)._confirmationResult = confirmationResult;
-      return { success: true };
-    } catch (error: any) {
-      console.error('sendPhoneOtp error:', error);
-      // Clear verifier on error so user can retry
-      if ((authAdapter as any)._recaptchaVerifier) {
-        try { (authAdapter as any)._recaptchaVerifier.clear(); } catch {}
-        (authAdapter as any)._recaptchaVerifier = null;
-      }
-      throw new Error(error.message || 'Failed to send OTP');
-    }
-  },
-
-  verifyPhoneOtp: async (code: string): Promise<UserProfile> => {
-    try {
-      const confirmationResult = (authAdapter as any)._confirmationResult;
-      if (!confirmationResult) throw new Error('No confirmation result. Request OTP first.');
-
-      const userCredential = await confirmationResult.confirm(code);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Create or update user profile as guest by default
       const userDocRef = doc(db, 'users', user.uid);
       await (await import('firebase/firestore')).setDoc(userDocRef, {
         uid: user.uid,
-        role: 'guest',
-        phoneNumber: user.phoneNumber || null,
+        email: user.email,
+        role: 'user',
+        lastLogin: serverTimestamp(),
+      }, { merge: true });
+
+      return { uid: user.uid, role: 'user' };
+    } catch (error: any) {
+      console.error('loginWithEmail error:', error);
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+        throw new Error('Неверный email или пароль');
+      }
+      if (error.code === 'auth/wrong-password') {
+        throw new Error('Неверный пароль');
+      }
+      if (error.code === 'auth/too-many-requests') {
+        throw new Error('Слишком много попыток. Подождите.');
+      }
+      throw new Error(error.message || 'Ошибка входа');
+    }
+  },
+
+  registerWithEmail: async (email: string, password: string): Promise<UserProfile> => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      const userDocRef = doc(db, 'users', user.uid);
+      await (await import('firebase/firestore')).setDoc(userDocRef, {
+        uid: user.uid,
+        email: user.email,
+        role: 'user',
         createdAt: serverTimestamp(),
         lastLogin: serverTimestamp(),
       }, { merge: true });
 
-      return { uid: user.uid, role: 'guest', phoneNumber: user.phoneNumber || undefined };
+      return { uid: user.uid, role: 'user' };
     } catch (error: any) {
-      console.error('verifyPhoneOtp error:', error);
-      throw new Error(error.message || 'Failed to verify OTP');
+      console.error('registerWithEmail error:', error);
+      if (error.code === 'auth/email-already-in-use') {
+        throw new Error('Этот email уже зарегистрирован');
+      }
+      if (error.code === 'auth/weak-password') {
+        throw new Error('Пароль слишком простой (мин. 6 символов)');
+      }
+      if (error.code === 'auth/invalid-email') {
+        throw new Error('Некорректный email');
+      }
+      throw new Error(error.message || 'Ошибка регистрации');
     }
   },
 

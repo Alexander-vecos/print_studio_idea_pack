@@ -12,8 +12,8 @@ interface AuthState {
   // Actions
   loginWithKey: (key: string) => Promise<void>;
   loginAsGuest: () => Promise<void>;
-  sendPhoneOtp: (phone: string) => Promise<boolean>;
-  verifyPhoneOtp: (code: string) => Promise<UserProfile>;
+  loginWithEmail: (email: string, password: string) => Promise<void>;
+  registerWithEmail: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   setUser: (user: UserProfile | null) => void;
   clearError: () => void;
@@ -62,28 +62,24 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      sendPhoneOtp: async (phone: string) => {
+      loginWithEmail: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
-          await authAdapter.sendPhoneOtp(phone);
-          set({ isLoading: false });
-          return true;
+          const userData = await authAdapter.loginWithEmail(email, password);
+          set({ user: userData, isLoading: false });
         } catch (err: any) {
-          console.error('sendPhoneOtp failed:', err);
-          set({ error: err.message || 'Failed to send OTP', isLoading: false });
+          set({ error: err.message || 'Ошибка входа', isLoading: false });
           throw err;
         }
       },
 
-      verifyPhoneOtp: async (code: string) => {
+      registerWithEmail: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
-          const userData = await authAdapter.verifyPhoneOtp(code);
+          const userData = await authAdapter.registerWithEmail(email, password);
           set({ user: userData, isLoading: false });
-          return userData;
         } catch (err: any) {
-          console.error('verifyPhoneOtp failed:', err);
-          set({ error: err.message || 'Failed to verify OTP', isLoading: false });
+          set({ error: err.message || 'Ошибка регистрации', isLoading: false });
           throw err;
         }
       },

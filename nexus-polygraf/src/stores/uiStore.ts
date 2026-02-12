@@ -7,7 +7,7 @@ interface SafeAreaInsets {
   left: number;
 }
 
-type ModalType = 'keyAuth' | 'phoneAuth' | 'fileUpload' | 'fileViewer' | 'keyGenerate' | null;
+type ModalType = 'keyAuth' | 'emailAuth' | 'fileUpload' | 'fileViewer' | 'keyGenerate' | null;
 
 interface UIState {
   // Navigation visibility
