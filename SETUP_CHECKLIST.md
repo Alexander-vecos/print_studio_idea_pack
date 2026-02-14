@@ -64,11 +64,6 @@ npm run dev
    - Configure package name and SHA1 fingerprints
    - Enable Google Sign-In API
 
-3. **Android OAuth Setup** (Optional - for Android apps)
-   - See [ANDROID_OAUTH_SETUP.md](./ANDROID_OAUTH_SETUP.md) for complete guide
-   - Configure package name and SHA1 fingerprints
-   - Enable Google Sign-In API
-
 4. **Deploy Security Rules**
    ```bash
    firebase deploy --only firestore:rules
