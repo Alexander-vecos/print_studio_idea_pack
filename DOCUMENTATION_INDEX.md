@@ -34,6 +34,13 @@ Complete documentation for the PrintStudio IdeaPack PWA application.
 | [REEL_INTEGRATION.md](./REEL_INTEGRATION.md) | Order Reel UI components | ⏱️ 20 min | Frontend devs |
 | [API_INTEGRATION.md](./API_INTEGRATION.md) | Connect Firestore data | ⏱️ 30 min | Backend devs |
 
+### 🔐 Authentication & Security
+
+| Document | Purpose | Time | Audience |
+|----------|---------|------|----------|
+| [AUTH_FLOW.md](./AUTH_FLOW.md) | Phone authentication guide | ⏱️ 10 min | Developers |
+| [ANDROID_OAUTH_SETUP.md](./ANDROID_OAUTH_SETUP.md) | Android OAuth 2.0 setup with SHA1 fingerprints | ⏱️ 30 min | Android devs |
+
 ### 🚀 Deployment & Production
 
 | Document | Purpose | Time | Audience |
@@ -289,6 +296,7 @@ See troubleshooting in each documentation file:
 - [QUICKSTART.md](./QUICKSTART.md#-troubleshooting)
 - [DEPLOYMENT.md](./DEPLOYMENT.md#-rollback-strategy)
 - [API_INTEGRATION.md](./API_INTEGRATION.md#-common-issues)
+- [ANDROID_OAUTH_SETUP.md](./ANDROID_OAUTH_SETUP.md#%EF%B8%8F-troubleshooting)
 
 ---
 

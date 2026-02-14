@@ -18,3 +18,7 @@ This doc explains step-by-step how phone authentication works and how to test it
    - If you use a custom domain or `localhost`, ensure your Firebase console allows your origin for Phone Auth.
    - For testing without SMS costs use Firebase Console -> Authentication -> Sign-in methods -> Phone -> Add test phone number and verification code.
    - If reCAPTCHA does not render, check browser console for errors and ensure `recaptcha-container` exists in DOM.
+
+4. Android OAuth Setup
+   - For Android OAuth 2.0 configuration with SHA1 fingerprints, see [ANDROID_OAUTH_SETUP.md](./ANDROID_OAUTH_SETUP.md)
+   - Includes complete guide for setting up Google Sign-In on Android devices
