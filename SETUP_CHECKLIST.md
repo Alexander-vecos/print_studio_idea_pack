@@ -59,12 +59,22 @@ npm run dev
    - Firebase Console → Authentication → Sign-in method
    - Enable "Anonymous"
 
-3. **Deploy Security Rules**
+3. **Android OAuth Setup** (Optional - for Android apps)
+   - See [ANDROID_OAUTH_SETUP.md](./ANDROID_OAUTH_SETUP.md) for complete guide
+   - Configure package name and SHA1 fingerprints
+   - Enable Google Sign-In API
+
+3. **Android OAuth Setup** (Optional - for Android apps)
+   - See [ANDROID_OAUTH_SETUP.md](./ANDROID_OAUTH_SETUP.md) for complete guide
+   - Configure package name and SHA1 fingerprints
+   - Enable Google Sign-In API
+
+4. **Deploy Security Rules**
    ```bash
    firebase deploy --only firestore:rules
    ```
 
-4. **Test Connection**
+5. **Test Connection**
    - App should attempt login with test key
    - Check browser console for errors
 
