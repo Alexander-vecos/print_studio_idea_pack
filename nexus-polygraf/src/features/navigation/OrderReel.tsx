@@ -7,6 +7,7 @@ import {
   FiPhone,
   FiMessageCircle,
 } from 'react-icons/fi';
+import { PriorityBadge } from '../../components/PriorityBadge';
 
 export interface Order {
   id: string;
@@ -16,6 +17,7 @@ export interface Order {
   status: 'new' | 'in_progress' | 'quality_check';
   deadline: string;
   previewImage?: string;
+  priority?: string;
   details: {
     type: string;
     colors: string;
@@ -101,9 +103,12 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, isActive, onUpload 
             <p className="text-white/70 text-sm">{order.client}</p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-gray-300">
+          <div className="flex items-center gap-2 text-xs text-gray-300 flex-wrap">
             <span className="bg-white/10 px-2 py-1 rounded">{order.details.type}</span>
             <span className="bg-white/10 px-2 py-1 rounded">{order.details.colors}</span>
+            {order.priority && (
+              <PriorityBadge code={order.priority} className="bg-white/10 px-2 py-1 rounded" />
+            )}
           </div>
         </div>
       </div>

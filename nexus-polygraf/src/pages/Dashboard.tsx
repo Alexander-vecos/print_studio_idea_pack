@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../stores/authStore';
 import { useUIStore } from '../stores/uiStore';
-import { useIsMobile } from '../hooks';
+import { useIsMobile, useReferenceData, getLabelFromItems } from '../hooks';
 import { FaSignOutAlt } from 'react-icons/fa';
 
 // Navigation imports
@@ -18,6 +18,7 @@ const MOCK_ORDERS: Order[] = [
     client: 'ЭкоСтиль',
     product: 'Визитки 90x50мм',
     status: 'in_progress',
+    priority: 'urgent_paid',
     deadline: new Date(Date.now() + 3 * 86400000).toISOString(),
     previewImage:
       'https://images.unsplash.com/photo-1509281373149-e957c6296406?q=80&w=1928&auto=format&fit=crop',
@@ -31,6 +32,7 @@ const MOCK_ORDERS: Order[] = [
     client: 'СтартАп Фест',
     product: 'Мерч: Футболки',
     status: 'new',
+    priority: 'default',
     deadline: new Date(Date.now() + 1 * 86400000).toISOString(),
     previewImage:
       'https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=1964&auto=format&fit=crop',
@@ -44,6 +46,7 @@ const MOCK_ORDERS: Order[] = [
     client: 'СтройГрупп',
     product: 'Баннер 3x6м',
     status: 'quality_check',
+    priority: 'director_control',
     deadline: new Date(Date.now() + 5 * 86400000).toISOString(),
     previewImage:
       'https://images.unsplash.com/photo-1542435503-956c469947f6?q=80&w=1974&auto=format&fit=crop',
@@ -57,6 +60,7 @@ const MOCK_ORDERS: Order[] = [
     client: 'КофеТайм',
     product: 'Меню А3',
     status: 'new',
+    priority: 'contract',
     deadline: new Date(Date.now() + 2 * 86400000).toISOString(),
     previewImage:
       'https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=1974&auto=format&fit=crop',
@@ -72,6 +76,7 @@ const MOCK_ORDERS: Order[] = [
 export default function Dashboard() {
   const { user, logout } = useAuthStore();
   const isMobile = useIsMobile();
+  const { items: roles } = useReferenceData('ROLES');
   const [currentView, setCurrentView] = useState('reel');
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -118,7 +123,7 @@ export default function Dashboard() {
                 className="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-xl p-8 text-white text-center"
               >
                 <h3 className="text-xl font-bold mb-2">Profile</h3>
-                <p className="text-emerald-100 capitalize">{user?.role}</p>
+                <p className="text-emerald-100">{user?.role ? getLabelFromItems(roles, user.role) : 'Гость'}</p>
               </motion.div>
 
               <motion.button
