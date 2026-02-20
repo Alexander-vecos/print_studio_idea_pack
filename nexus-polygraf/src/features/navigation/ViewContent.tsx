@@ -1,6 +1,7 @@
 import React from 'react';
 import { FiCalendar, FiUsers, FiMoreHorizontal, FiLogOut, FiUser, FiShield } from 'react-icons/fi';
 import { useAuthStore } from '../../stores/authStore';
+import { useReferenceData, getLabelFromItems } from '../../hooks';
 
 interface ViewPlaceholderProps {
   icon: React.ReactNode;
@@ -42,6 +43,7 @@ export const TeamView: React.FC = () => (
 
 export const MoreView: React.FC = () => {
   const { user, logout } = useAuthStore();
+  const { items: roles } = useReferenceData('ROLES');
 
   return (
     <div className="p-6 space-y-4">
@@ -56,7 +58,7 @@ export const MoreView: React.FC = () => {
           <p className="text-white font-medium">{user?.phoneNumber || user?.uid?.slice(0, 8) || 'Пользователь'}</p>
           <div className="flex items-center gap-1 text-white/50 text-sm">
             <FiShield className="text-xs" />
-            <span className="capitalize">{user?.role || 'guest'}</span>
+            <span>{user?.role ? getLabelFromItems(roles, user.role) : 'Гость'}</span>
           </div>
         </div>
       </div>

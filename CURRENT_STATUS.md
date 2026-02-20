@@ -167,8 +167,9 @@ match /reference/{document=**} {
 ### 2️⃣ ВЫСОКИЙ ПРИОРИТЕТ: Добавить справочники в UI компоненты
 
 **Где добавить**:
-- [ ] Role selector в Dashboard
-- [ ] Priority badge в OrderReel
+- [x] Priority badge в OrderReel
+- [x] Role label в Dashboard (desktop)
+- [x] Role label в MoreView (настройки)
 - [ ] Status timeline в StatusBar
 
 **Как**: Смотри REFERENCE_CHEATSHEET.md - примеры кода
@@ -361,9 +362,10 @@ export function MyComponent() {
 ## 🔄 Что дальше
 
 ### Сегодня
-1. [ ] Обновить Firestore Rules ⚠️
-2. [ ] Добавить Role selector в Dashboard
-3. [ ] Тестировать используя app
+1. [x] Обновить Firestore Rules ⚠️
+2. [x] Добавить Role label в Dashboard и MoreView
+3. [x] Добавить Priority badge в OrderReel
+4. [ ] Тестировать используя app
 
 ### На неделе
 4. [ ] Добавить все справочники в нужные компоненты
