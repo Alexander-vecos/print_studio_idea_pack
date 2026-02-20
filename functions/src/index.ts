@@ -1,6 +1,10 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { defineSecret } from 'firebase-functions/params';
+
+const huggingfaceApiKey = defineSecret('HUGGINGFACE_API_KEY');
+const deepseekApiKey = defineSecret('DEEPSEEK_API_KEY');
 
 const app = initializeApp();
 
@@ -78,3 +82,74 @@ export const deactivateKey = onCall(async (request) => {
   });
   return { success: true };
 });
+
+// Callable: proxy AI generation (Hugging Face or DeepSeek)
+export const aiGenerate = onCall(
+  { secrets: [huggingfaceApiKey, deepseekApiKey] },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Authentication required');
+    }
+
+    const { provider, model, prompt } = request.data as {
+      provider: 'huggingface' | 'deepseek';
+      model?: string;
+      prompt: string;
+    };
+
+    if (!provider) throw new HttpsError('invalid-argument', 'Provider is required');
+    if (!prompt) throw new HttpsError('invalid-argument', 'Prompt is required');
+
+    if (provider === 'huggingface') {
+      const apiKey = huggingfaceApiKey.value();
+      const hfModel = model || 'mistralai/Mixtral-8x7B-Instruct-v0.1';
+      const response = await fetch(
+        `https://api-inference.huggingface.co/models/${hfModel}`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ inputs: prompt }),
+        }
+      );
+      if (!response.ok) {
+        throw new HttpsError('internal', `Hugging Face API error: ${response.statusText}`);
+      }
+      const data = await response.json() as { generated_text?: string }[] | { generated_text?: string };
+      const text = Array.isArray(data) ? data[0]?.generated_text : data?.generated_text;
+      if (text === undefined) {
+        console.warn('Unexpected Hugging Face response structure:', JSON.stringify(data));
+      }
+      return { text: text ?? '' };
+    }
+
+    if (provider === 'deepseek') {
+      const apiKey = deepseekApiKey.value();
+      const dsModel = model || 'deepseek-chat';
+      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: dsModel,
+          messages: [{ role: 'user', content: prompt }],
+        }),
+      });
+      if (!response.ok) {
+        throw new HttpsError('internal', `DeepSeek API error: ${response.statusText}`);
+      }
+      const data = await response.json() as { choices?: { message?: { content?: string } }[] };
+      const text = data.choices?.[0]?.message?.content;
+      if (text === undefined) {
+        console.warn('Unexpected DeepSeek response structure:', JSON.stringify(data));
+      }
+      return { text: text ?? '' };
+    }
+
+    throw new HttpsError('invalid-argument', `Unknown provider: ${provider}`);
+  }
+);
