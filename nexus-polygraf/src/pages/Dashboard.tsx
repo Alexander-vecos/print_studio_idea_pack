@@ -123,7 +123,7 @@ export default function Dashboard() {
                 className="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-xl p-8 text-white text-center"
               >
                 <h3 className="text-xl font-bold mb-2">Profile</h3>
-                <p className="text-emerald-100 capitalize">{user?.role ? getLabelFromItems(roles, user.role) : 'Гость'}</p>
+                <p className="text-emerald-100">{user?.role ? getLabelFromItems(roles, user.role) : 'Гость'}</p>
               </motion.div>
 
               <motion.button
